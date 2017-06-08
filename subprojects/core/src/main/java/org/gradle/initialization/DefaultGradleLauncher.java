@@ -171,7 +171,7 @@ public class DefaultGradleLauncher implements GradleLauncher {
 
         if (!gradle.getIncludedBuilds().isEmpty()) {
             IncludedBuildControllers buildControllers = gradle.getServices().get(IncludedBuildControllers.class);
-            buildControllers.startTaskExecution(buildOperationExecutor.getCurrentOperation());
+            buildControllers.startTaskExecution();
         }
 
         buildOperationExecutor.run(new ExecuteTasks());
@@ -250,7 +250,7 @@ public class DefaultGradleLauncher implements GradleLauncher {
         public BuildOperationDescriptor.Builder description() {
             return BuildOperationDescriptor.displayName(contextualize("Calculate task graph"))
                 .details(new CalculateTaskGraphBuildOperationType.Details() {
-                });
+                }).parent(getGradle().getBuildOperation());
         }
     }
 
@@ -262,7 +262,7 @@ public class DefaultGradleLauncher implements GradleLauncher {
 
         @Override
         public BuildOperationDescriptor.Builder description() {
-            return BuildOperationDescriptor.displayName(contextualize("Run tasks"));
+            return BuildOperationDescriptor.displayName(contextualize("Run tasks")).parent(getGradle().getBuildOperation());
         }
     }
 

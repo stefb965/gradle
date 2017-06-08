@@ -26,7 +26,6 @@ import org.gradle.internal.concurrent.CompositeStoppable;
 import org.gradle.internal.concurrent.ExecutorFactory;
 import org.gradle.internal.concurrent.ManagedExecutor;
 import org.gradle.internal.concurrent.Stoppable;
-import org.gradle.internal.progress.BuildOperationState;
 
 import java.util.Map;
 
@@ -34,7 +33,6 @@ class DefaultIncludedBuildControllers implements Stoppable, IncludedBuildControl
     private final Map<BuildIdentifier, IncludedBuildController> buildControllers = Maps.newHashMap();
     private final ManagedExecutor executorService;
     private final IncludedBuilds includedBuilds;
-    private BuildOperationState parentOperation;
     private boolean taskExecutionStarted;
 
     DefaultIncludedBuildControllers(ExecutorFactory executorFactory, IncludedBuilds includedBuilds) {
@@ -55,18 +53,17 @@ class DefaultIncludedBuildControllers implements Stoppable, IncludedBuildControl
 
         // Required for build controllers created after initial start
         if (taskExecutionStarted) {
-            newBuildController.startTaskExecution(parentOperation);
+            newBuildController.startTaskExecution();
         }
 
         return newBuildController;
     }
 
     @Override
-    public void startTaskExecution(BuildOperationState parentOperation) {
-        this.parentOperation = parentOperation;
+    public void startTaskExecution() {
         this.taskExecutionStarted = true;
         for (IncludedBuildController buildController : buildControllers.values()) {
-            buildController.startTaskExecution(parentOperation);
+            buildController.startTaskExecution();
         }
     }
 

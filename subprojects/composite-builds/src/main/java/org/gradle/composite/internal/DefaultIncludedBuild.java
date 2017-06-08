@@ -29,11 +29,6 @@ import org.gradle.api.internal.artifacts.ivyservice.dependencysubstitution.Depen
 import org.gradle.api.tasks.TaskReference;
 import org.gradle.initialization.GradleLauncher;
 import org.gradle.internal.Factory;
-import org.gradle.internal.operations.BuildOperationContext;
-import org.gradle.internal.operations.BuildOperationExecutor;
-import org.gradle.internal.operations.CallableBuildOperation;
-import org.gradle.internal.progress.BuildOperationDescriptor;
-import org.gradle.internal.progress.BuildOperationState;
 
 import java.io.File;
 import java.util.List;
@@ -129,27 +124,16 @@ public class DefaultIncludedBuild implements IncludedBuildInternal {
     }
 
     @Override
-    public BuildResult execute(final Iterable<String> tasks, final BuildOperationState parentOperation, final Object listener) {
+    public BuildResult execute(final Iterable<String> tasks, final Object listener) {
         final GradleLauncher launcher = getGradleLauncher();
         final GradleInternal gradle = launcher.getGradle();
-        BuildOperationExecutor buildOperationExecutor = gradle.getServices().get(BuildOperationExecutor.class);
-        return buildOperationExecutor.call(new CallableBuildOperation<BuildResult>() {
-            @Override
-            public BuildResult call(BuildOperationContext context) {
-                gradle.getStartParameter().setTaskNames(tasks);
-                gradle.addListener(listener);
-                try {
-                    return launcher.run();
-                } finally {
-                    markAsNotReusable();
-                }
-            }
-
-            @Override
-            public BuildOperationDescriptor.Builder description() {
-                return BuildOperationDescriptor.displayName("Run included build (" + gradle.getIdentityPath() + ")").parent(parentOperation);
-            }
-        });
+        gradle.getStartParameter().setTaskNames(tasks);
+        gradle.addListener(listener);
+        try {
+            return launcher.run();
+        } finally {
+            markAsNotReusable();
+        }
     }
 
     private void markAsNotReusable() {
